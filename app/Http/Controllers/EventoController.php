@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use App\Http\Requests\StoreEventoRequest;
 use App\Http\Requests\UpdateEventoRequest;
 
+use App\Mail\InscripcionConfirmada;
+use Illuminate\Support\Facades\Mail;
+
 class EventoController extends Controller
 {
     /**
@@ -69,6 +72,11 @@ class EventoController extends Controller
 
     public function inscribir(Request $request, Evento $evento)
     {
+        // Si es una petición GET, redirige al show del evento
+        if ($request->isMethod('get')) {
+            return redirect()->route('eventos.show', $evento);
+        }
+
         // Obtener el usuario autenticado
         $user = auth()->user();
         
@@ -80,6 +88,9 @@ class EventoController extends Controller
         // Inscribir al usuario
         $evento->users()->attach($user->id);
 
-        return back()->with('success', 'Inscripción exitosa');
+        // Enviar correo de confirmación
+        Mail::to($user->email)->send(new InscripcionConfirmada($evento, $user));
+
+        return back()->with('success', 'Inscripción exitosa. Se ha enviado un correo de confirmación.');
     }
 }
