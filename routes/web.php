@@ -10,6 +10,10 @@ Route::get('/', function () {
     return redirect()->route('eventos.index');
 })->name('home');
 
+Route::post('/eventos/{evento}/inscribir', [EventoController::class, 'inscribir'])
+    ->name('eventos.inscribir')
+    ->middleware(['auth']);
+
 Route::resource('eventos', EventoController::class)->middleware(['auth', 'verified']);
 
 Route::view('dashboard', 'dashboard')

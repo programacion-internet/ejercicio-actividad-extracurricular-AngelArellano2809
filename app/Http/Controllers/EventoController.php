@@ -40,7 +40,7 @@ class EventoController extends Controller
     public function show(Evento $evento)
     {
         $users = User::all();
-        return view('eventos.evento-show', compact('eventos', 'users'));
+        return view('eventos.evento-show', compact('evento', 'users'));
     }
 
     /**
@@ -67,9 +67,19 @@ class EventoController extends Controller
         //
     }
 
-    public function actualizarUsersEvento(Request $request, Evento $evento)
+    public function inscribir(Request $request, Evento $evento)
     {
-        $evento->users()->sync($request->user_id);
-        return redirect()->route('evento.show', $evento);
+        // Obtener el usuario autenticado
+        $user = auth()->user();
+        
+        // Verificar si ya está inscrito
+        if($evento->users()->where('user_id', $user->id)->exists()) {
+            return back()->with('error', 'Ya estás inscrito en este evento');
+        }
+
+        // Inscribir al usuario
+        $evento->users()->attach($user->id);
+
+        return back()->with('success', 'Inscripción exitosa');
     }
 }

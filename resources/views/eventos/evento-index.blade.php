@@ -19,7 +19,7 @@
                         <td>{{ $evento->fecha }}</td>
                         <td>
                             @foreach ($evento->users as $user)
-                                {{ $user->nombre }}<br>
+                                {{ $user->name }}<br>
                             @endforeach
                         </td>
                     </tr>
