@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\Evento;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreEventoRequest;
 use App\Http\Requests\UpdateEventoRequest;
 
@@ -13,7 +15,7 @@ class EventoController extends Controller
      */
     public function index()
     {
-        //
+        return view('eventos.evento-index', ['eventos' => Evento::all()],);
     }
 
     /**
@@ -37,7 +39,8 @@ class EventoController extends Controller
      */
     public function show(Evento $evento)
     {
-        //
+        $users = User::all();
+        return view('eventos.evento-show', compact('eventos', 'users'));
     }
 
     /**
@@ -62,5 +65,11 @@ class EventoController extends Controller
     public function destroy(Evento $evento)
     {
         //
+    }
+
+    public function actualizarUsersEvento(Request $request, Evento $evento)
+    {
+        $evento->users()->sync($request->user_id);
+        return redirect()->route('evento.show', $evento);
     }
 }

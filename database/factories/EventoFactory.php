@@ -16,8 +16,12 @@ class EventoFactory extends Factory
      */
     public function definition(): array
     {
+        $fechaEvento = $this->faker->dateTimeBetween('now', '+30 days');
+        
         return [
-            //
+            'nombre' => $this->faker->name(),
+            'descripcion' => $this->faker->paragraph(1),
+            'fecha' => $fechaEvento,
         ];
     }
 }
