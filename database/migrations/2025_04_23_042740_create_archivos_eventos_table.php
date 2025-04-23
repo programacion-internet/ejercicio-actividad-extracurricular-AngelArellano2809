@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('save_file', function (Blueprint $table) {
+        Schema::create('archivos_eventos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre_original');
             $table->string('nombre_hash');
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('save_file');
+        Schema::dropIfExists('arechivos');
     }
 };

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ArchivoEventoController;
 use App\Http\Controllers\EventoController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
@@ -14,7 +15,25 @@ Route::post('/eventos/{evento}/inscribir', [EventoController::class, 'inscribir'
     ->name('eventos.inscribir')
     ->middleware(['auth']);
 
+Route::get('/eventos/{evento}', [EventoController::class, 'show'])
+    ->name('eventos.show')
+    ->middleware('auth');
+
 Route::resource('eventos', EventoController::class)->middleware(['auth', 'verified']);
+
+Route::middleware(['auth'])->group(function () {
+    // Subir archivo
+    Route::post('/eventos/{evento}/archivos', [ArchivoEventoController::class, 'upload'])
+        ->name('eventos.archivos.upload');
+    
+    // Descargar archivo
+    Route::get('/eventos/{evento}/archivos/{archivo}/descargar', [ArchivoEventoController::class, 'download'])
+        ->name('eventos.archivos.download');
+    
+    // Eliminar archivo
+    Route::delete('/eventos/{evento}/archivos/{archivo}', [ArchivoEventoController::class, 'delete'])
+        ->name('eventos.archivos.delete');
+});
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])

@@ -42,8 +42,24 @@ class EventoController extends Controller
      */
     public function show(Evento $evento)
     {
-        $users = User::all();
-        return view('eventos.evento-show', compact('evento', 'users'));
+        // Verificar que el usuario está inscrito
+        if (!auth()->user()->is_admin && !$evento->users->contains(auth()->id())) {
+            abort(403, 'No estás inscrito en este evento');
+        }
+    
+        // Obtener archivos según el tipo de usuario
+        $archivosQuery = $evento->archivos();
+        
+        if (!auth()->user()->is_admin) {
+            $archivosQuery->where('user_id', auth()->id());
+        }
+    
+        $archivos = $archivosQuery->get();
+    
+        return view('eventos.evento-show', [
+            'evento' => $evento,
+            'archivos' => $archivos
+        ]);
     }
 
     /**

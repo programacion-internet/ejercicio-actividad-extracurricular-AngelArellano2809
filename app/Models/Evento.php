@@ -23,4 +23,9 @@ class Evento extends Model
     {
         return $this->belongsToMany(User::class, 'evento_user');
     }
+
+    public function archivos()
+    {
+        return $this->hasMany(ArchivoEvento::class);
+    }
 }
