@@ -14,7 +14,7 @@
                     return $evento->fecha >= now();
                 }) as $evento)
                     <tr>
-                        <td><a href="{{ route('eventos.show', $evento) }}">{{ $evento->nombre }}</a></td>
+                        <td><a href="{{ route('eventos.evento-show', $evento) }}">{{ $evento->nombre }}</a></td>
                         <td>{{ $evento->descripcion }}</td>
                         <td>{{ $evento->fecha }}</td>
                         <td>
