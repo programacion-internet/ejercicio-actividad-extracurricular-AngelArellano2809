@@ -8,6 +8,18 @@ use Illuminate\Auth\Access\Response;
 
 class EventoPolicy
 {
+    public function inscribir(User $user, Evento $evento)
+    {
+        // Solo alumnos no inscritos pueden inscribirse
+        return !$user->is_admin && !$evento->users()->where('user_id', $user->id)->exists();
+    }
+
+    public function upload(User $user, Evento $evento)
+    {
+        // Solo alumnos inscritos pueden subir
+        return !$user->is_admin && $evento->users()->where('user_id', $user->id)->exists();
+    }
+    
     /**
      * Determine whether the user can view any models.
      */
@@ -16,13 +28,6 @@ class EventoPolicy
         return false;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Evento $evento): bool
-    {
-        return false;
-    }
 
     /**
      * Determine whether the user can create models.
@@ -40,13 +45,6 @@ class EventoPolicy
         return false;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Evento $evento): bool
-    {
-        return false;
-    }
 
     /**
      * Determine whether the user can restore the model.

@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateEventoRequest;
 
 use App\Mail\InscripcionConfirmada;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Gate;
 
 class EventoController extends Controller
 {
@@ -18,7 +19,10 @@ class EventoController extends Controller
      */
     public function index()
     {
-        return view('eventos.evento-index', ['eventos' => Evento::all()],);
+        // Mostrar solo eventos futuros para todos los usuarios
+        $eventos = Evento::where('fecha', '>=', now())->get();
+        
+        return view('eventos.evento-index', compact('eventos'));
     }
 
     /**
@@ -42,20 +46,10 @@ class EventoController extends Controller
      */
     public function show(Evento $evento)
     {
-        // Verificar que el usuario está inscrito
-        if (!auth()->user()->is_admin && !$evento->users->contains(auth()->id())) {
-            abort(403, 'No estás inscrito en este evento');
-        }
-    
-        // Obtener archivos según el tipo de usuario
-        $archivosQuery = $evento->archivos();
+        $archivos = auth()->user()->is_admin 
+            ? $evento->archivos()->with('user')->get() 
+            : $evento->archivos()->where('user_id', auth()->id())->get();
         
-        if (!auth()->user()->is_admin) {
-            $archivosQuery->where('user_id', auth()->id());
-        }
-    
-        $archivos = $archivosQuery->get();
-    
         return view('eventos.evento-show', [
             'evento' => $evento,
             'archivos' => $archivos
@@ -88,25 +82,15 @@ class EventoController extends Controller
 
     public function inscribir(Request $request, Evento $evento)
     {
-        // Si es una petición GET, redirige al show del evento
-        if ($request->isMethod('get')) {
-            return redirect()->route('eventos.show', $evento);
-        }
-
-        // Obtener el usuario autenticado
-        $user = auth()->user();
-        
-        // Verificar si ya está inscrito
-        if($evento->users()->where('user_id', $user->id)->exists()) {
-            return back()->with('error', 'Ya estás inscrito en este evento');
-        }
-
-        // Inscribir al usuario
+        Gate::authorize('inscribir', $evento);
+    
+        $user = $request->user();
         $evento->users()->attach($user->id);
 
         // Enviar correo de confirmación
         Mail::to($user->email)->send(new InscripcionConfirmada($evento, $user));
 
-        return back()->with('success', 'Inscripción exitosa. Se ha enviado un correo de confirmación.');
+        return back()->with('success', 'Inscripción exitosa');
+
     }
 }

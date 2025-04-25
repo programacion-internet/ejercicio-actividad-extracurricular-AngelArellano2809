@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
+use Illuminate\Support\Facades\Gate;
+
 class ArchivoEventoController extends Controller
 {
     public function index(Evento $evento)
@@ -29,6 +31,8 @@ class ArchivoEventoController extends Controller
 
     public function upload(Request $request, Evento $evento)
     {
+        Gate::authorize('upload', $evento);
+        
         $request->validate([
             'archivo' => 'required|file|max:10240' // Máximo 10MB
         ]);
@@ -53,20 +57,13 @@ class ArchivoEventoController extends Controller
 
     public function download(Evento $evento, ArchivoEvento $archivo)
     {
-        // Verificar que el usuario está autorizado (es el dueño del archivo)
-        if ($archivo->user_id !== auth()->id()) {
-            abort(403, 'No tienes permiso para acceder a este archivo');
-        }
-
+        Gate::authorize('view', $archivo);
         return Storage::download($archivo->nombre_hash, $archivo->nombre_original);
     }
 
     public function delete(Evento $evento, ArchivoEvento $archivo)
     {
-        // Solo el dueño del archivo o admin puede borrar
-        if ($archivo->user_id !== Auth::id() && !Auth::user()->is_admin) {
-            abort(403, 'No tienes permiso para eliminar este archivo');
-        }
+        Gate::authorize('delete', $archivo);
 
         Storage::delete($archivo->nombre_hash);
         $archivo->delete();
